@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap-3.3.7-dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'datetimepicker/bootstrap-datetimepicker.min.css' %}">
+</head>
+<body>
+
+<h1>{{ label }}</h1>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <form id="form1" action="" method="post" novalidate>
+
+                {% csrf_token %}
+                {% for i in from_obj %}
+                    {{ i.label }}
+                    {{ i }}
+                    <span>{{ i.errors }}</span>
+                {% endfor %}
+                <button id="btn" type="button" class="btn btn-success pull-right">提交</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/jquery-3.4.1.js' %}"></script>
+<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+<script src="{% static 'datetimepicker/bootstrap-datetimepicker.min.js' %}"></script>
+<script src="{% static 'datetimepicker/bootstrap-datetimepicker.zh-CN.js' %}"></script>
+<script>
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    };
+
+    $(function () {
+        initDatepicker();
+    });
+
+    function initDatepicker() {
+        $('#id_start,#id_end').datetimepicker({
+            language: "zh-CN",
+            minView: "hour", // month
+            sideBySide: true,
+            format: 'yyyy-mm-dd hh:ii',
+            bootcssVer: 3,
+            startDate: new Date(),
+            autoclose: true
+        })
+    }
+</script>
+<script>
+    $("#btn").click(function (res) {
+        console.log(res);
+        console.log("上传中");
+        var formdata = new FormData($("#form1")[0]);
+        {#var file_obj=$("[type=file]")[0].files[0];#}
+        {#console.log(file_obj);#}
+        {#formdata.append("file",file_obj);#}
+        {#console.log(formdata);#}
+        $.ajax({
+            url: "{% url "webmaster:dicountadd" %}",
+            type: "post",
+            data: formdata,
+            cache: false,
+            processData: false, //不处理数据
+            contentType: false,//不设置内容类型#有了这个两个数据告诉ajax不会对数据进行任何加工
+            dataType: "JSON",
+            headers: {
+                "X-CSRFToken": $.cookie('csrftoken'),
+            },//需要引用jquery.cookie
+            {#success:function () {#}
+            {# }#}
+            success: function (res) {
+                if (res.status) {
+                    window.location.href = '/webmaster/discount/show'
+                }
+            },
+            fail: function (res) {
+                console.log(res);
+
+            }
+        })
+    })
+</script>
+</body>
+</html>

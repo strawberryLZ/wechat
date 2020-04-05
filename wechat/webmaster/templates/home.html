@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap-3.3.7-dist/css/bootstrap.css' %}">
+
+</head>
+<body>
+
+<h1>展示专场</h1>
+
+<form class="form-inline">
+    <div>
+        搜索完善中
+        {{ select_form }}<input name='filter2' type="text" value="{{ search_name|default:'' }}">
+        <button class="btn-primary">搜索</button>
+    </div>
+</form>
+{#        <div><a href="{% url 'sales:addcustomer' %}?next={{ request.get_ful_path }}" class="btn btn-primary">添加客户</a></div>#}
+<form action="" method="post">
+    <a href="{% url 'webmaster:add' %}">增加</a>
+    {% csrf_token %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>学号</th>
+            <th>封面</th>
+            <th>专场名称</th>
+            <th>预展时间</th>
+            <th>拍卖时间</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for foo in from_obj %}
+            <tr>
+                <td><input name="cids" type="checkbox" value="{{ foo.pk }}"></td>
+                <td class="danger">{{ forloop.counter }}</td>
+                <td class="danger"><img src="{{ foo.cover }}" style="height:100px;width:100px"></img></td>
+                <td class="danger"><a href="{% url 'webmaster:auction_item_list' auction_id=foo.id %}">{{ foo.title }}</a></td>
+                <td class="danger">{{ foo.showtime|date:"Y-m-d H:i" }}</td>
+                <td class="danger">{{ foo.opentime|date:"Y-m-d H:i" }}</td>
+                <td class="danger">{{ foo.get_status_display }}</td>
+                <td>
+                    <a href="{% url 'webmaster:editor' pk=foo.id %}">编辑</a>
+                    <button class="bg-primary Del" nid="{{ foo.id }}">ajax删除</button>
+                    <button class="bg-primary aj" nid="{{ foo.id }}">ajax编辑</button>
+                </td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>
+
+<script src="{% static 'js/jquery-3.4.1.js' %}"></script>
+<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+<script>
+    $(".Del").click(function () {
+        var ths = $(this);
+        var id = ths.attr("nid");
+        console.log(id);
+        if (confirm("确定要删除么")) {
+            $.ajax({
+                url: "{% url 'webmaster:del'%}",
+                type: "POST",
+                data: {"id": id, 'csrfmiddlewaretoken': "{{ csrf_token }}"},
+                success: function (res) {
+                    alert("删除成功");
+                }
+            })
+        }
+    });
+
+</script>
+</body>
+</html>
